@@ -13,10 +13,9 @@
           :key="heading.id"
           :href="`#${heading.id}`"
           :class="[
-            'block text-sm hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded',
-            `pl-${(heading.level - 1) * 2 + 2}`,
-            'text-gray-700'
+            'block text-sm hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-gray-700'
           ]"
+          :style="{ paddingLeft: `${(heading.level - 1) * 0.5 + 0.5}rem` }"
           @click="scrollToHeading(heading.id)"
         >
           {{ heading.text }}

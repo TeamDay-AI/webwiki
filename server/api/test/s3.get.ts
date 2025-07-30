@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk'
+import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -10,18 +10,22 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const s3 = new AWS.S3({
-    accessKeyId: config.awsAccessKeyId,
-    secretAccessKey: config.awsSecretAccessKey,
+  const s3Client = new S3Client({
+    credentials: {
+      accessKeyId: config.awsAccessKeyId,
+      secretAccessKey: config.awsSecretAccessKey,
+    },
     region: config.awsRegion
   })
 
   try {
     // Test bucket access by listing objects
-    await s3.listObjectsV2({
+    const command = new ListObjectsV2Command({
       Bucket: config.s3BucketName,
       MaxKeys: 1
-    }).promise()
+    })
+    
+    await s3Client.send(command)
 
     return {
       success: true,

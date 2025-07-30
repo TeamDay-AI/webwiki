@@ -39,8 +39,8 @@
     </div>
     
     <div class="mt-8">
-      <UButton @click="testS3Connection" :loading="testingS3">Test S3 Connection</UButton>
-      <UButton @click="navigateTo('/')" class="ml-4">Back to Home</UButton>
+      <CButton @click="testS3Connection" :loading="testingS3">Test S3 Connection</CButton>
+      <CButton @click="navigateTo('/')" class="ml-4">Back to Home</CButton>
     </div>
 
     <div v-if="s3TestResult" class="mt-4 p-4 rounded" :class="s3TestResult.success ? 'bg-green-50' : 'bg-red-50'">

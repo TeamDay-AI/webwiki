@@ -3,7 +3,32 @@
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 px-6 py-4">
       <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold text-gray-900">Wiki</h1>
+        <div class="flex items-center space-x-2">
+          <h1 class="text-2xl font-bold text-gray-900">Wiki</h1>
+          <div v-if="currentPath" class="flex items-center text-sm text-gray-500">
+            <span class="mx-2">/</span>
+            <div class="flex items-center space-x-1">
+              <span 
+                v-for="(segment, index) in pathSegments" 
+                :key="index"
+                class="flex items-center"
+              >
+                <CButton
+                  v-if="index < pathSegments.length - 1"
+                  size="xs"
+                  color="gray"
+                  variant="ghost"
+                  @click="navigateToSegment(index)"
+                  class="px-2 py-1 hover:bg-gray-100"
+                >
+                  {{ segment }}
+                </CButton>
+                <span v-else class="font-medium text-gray-700 px-2">{{ segment }}</span>
+                <span v-if="index < pathSegments.length - 1" class="mx-1 text-gray-400">/</span>
+              </span>
+            </div>
+          </div>
+        </div>
         
         <div class="flex items-center space-x-4">
           <span v-if="user" class="text-sm text-gray-600">
@@ -100,6 +125,7 @@
 
 <script setup lang="ts">
 const { user, signIn, signUp, signOut } = useAuth()
+const route = useRoute()
 
 const selectedFile = ref<string>()
 const currentContent = ref<string>('')
@@ -112,12 +138,38 @@ const authForm = reactive({
   password: ''
 })
 
+// Get the current path from URL
+const currentPath = computed(() => {
+  const pathParam = route.params.path
+  if (Array.isArray(pathParam)) {
+    return pathParam.join('/')
+  }
+  return pathParam || ''
+})
+
+// Path segments for breadcrumb navigation
+const pathSegments = computed(() => {
+  if (!currentPath.value) return []
+  return currentPath.value.split('/').filter(Boolean)
+})
+
+// Navigate to a specific path segment (for breadcrumb navigation)
+const navigateToSegment = (index: number) => {
+  const segments = pathSegments.value.slice(0, index + 1)
+  const newPath = segments.join('/')
+  if (newPath) {
+    navigateTo(`/wiki/${newPath}`)
+  } else {
+    navigateTo('/wiki')
+  }
+}
+
 const handleFileSelect = (filePath: string) => {
   selectedFile.value = filePath
   
   // Update URL to reflect the file path (remove user ID for clean URLs)
   const cleanPath = filePath.replace(/^users\/[^/]+\//, "")
-  if (cleanPath) {
+  if (cleanPath && cleanPath !== currentPath.value) {
     navigateTo(`/wiki/${cleanPath}`, { replace: true })
   }
 }
@@ -164,17 +216,25 @@ const handleSignOut = async () => {
   await signOut()
   selectedFile.value = undefined
   currentContent.value = ''
+  navigateTo('/wiki')
 }
 
 const toggleAuthMode = () => {
   authMode.value = authMode.value === 'signin' ? 'signup' : 'signin'
 }
 
-// Redirect to welcome file or auth modal
-watch(user, async (newUser) => {
+// Handle URL-based file selection
+watch([user, currentPath], async ([newUser, newPath]) => {
   if (!newUser) {
     showAuthModal.value = true
-  } else if (newUser) {
+    return
+  }
+
+  if (newUser && newPath) {
+    // Convert URL path to full file path with user ID
+    const fullPath = `users/${newUser.id}/${newPath}`
+    selectedFile.value = fullPath
+  } else if (newUser && !selectedFile.value) {
     // Ensure user directory exists for existing users
     try {
       await $fetch('/api/wiki/init-user', {
@@ -182,11 +242,10 @@ watch(user, async (newUser) => {
         body: { userId: newUser.id }
       })
     } catch (error) {
-      // Ignore errors - the API will handle missing directories on-demand
       console.warn('Could not pre-initialize user directory:', error)
     }
     
-    // No automatic redirect - user can navigate manually
+    // User can navigate manually - no automatic file selection
   }
 }, { immediate: true })
 </script>

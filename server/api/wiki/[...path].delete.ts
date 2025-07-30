@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk'
+import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -11,17 +11,21 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const s3 = new AWS.S3({
-    accessKeyId: config.awsAccessKeyId,
-    secretAccessKey: config.awsSecretAccessKey,
+  const s3Client = new S3Client({
+    credentials: {
+      accessKeyId: config.awsAccessKeyId,
+      secretAccessKey: config.awsSecretAccessKey,
+    },
     region: config.awsRegion
   })
 
   try {
-    await s3.deleteObject({
+    const command = new DeleteObjectCommand({
       Bucket: config.s3BucketName,
       Key: path
-    }).promise()
+    })
+    
+    await s3Client.send(command)
 
     return {
       success: true,

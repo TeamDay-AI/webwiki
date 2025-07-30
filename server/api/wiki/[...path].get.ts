@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk'
+import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -11,9 +11,11 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const s3 = new AWS.S3({
-    accessKeyId: config.awsAccessKeyId,
-    secretAccessKey: config.awsSecretAccessKey,
+  const s3Client = new S3Client({
+    credentials: {
+      accessKeyId: config.awsAccessKeyId,
+      secretAccessKey: config.awsSecretAccessKey,
+    },
     region: config.awsRegion
   })
 
@@ -22,11 +24,13 @@ export default defineEventHandler(async (event) => {
     if (path.endsWith('/') || !path.includes('.')) {
       const dirPath = path.endsWith('/') ? path : `${path}/`
       
-      const response = await s3.listObjectsV2({
+      const command = new ListObjectsV2Command({
         Bucket: config.s3BucketName,
         Prefix: dirPath,
         Delimiter: '/'
-      }).promise()
+      })
+      
+      const response = await s3Client.send(command)
 
       const files = response.Contents?.map(item => ({
         key: item.Key,
@@ -50,12 +54,13 @@ export default defineEventHandler(async (event) => {
     }
 
     // If it's a file, get its content
-    const response = await s3.getObject({
+    const command = new GetObjectCommand({
       Bucket: config.s3BucketName,
       Key: path
-    }).promise()
-
-    const content = response.Body?.toString('utf-8') || ''
+    })
+    
+    const response = await s3Client.send(command)
+    const content = await response.Body?.transformToString('utf-8') || ''
 
     return {
       content,

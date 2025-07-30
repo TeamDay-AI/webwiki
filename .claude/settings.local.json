@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(ls:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(curl:*)",
+      "Bash(mv:*)",
+      "Bash(kill:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

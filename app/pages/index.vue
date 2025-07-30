@@ -5,9 +5,9 @@
       <p class="text-xl text-gray-600 mb-8">
         A simple markdown-based wiki system
       </p>
-      <UButton size="lg" @click="navigateTo('/wiki')">
+      <CButton size="lg" @click="navigateTo('/wiki')">
         Get Started
-      </UButton>
+      </CButton>
     </div>
   </div>
 </template>
