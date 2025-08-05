@@ -5,20 +5,24 @@
       <p class="text-xl text-gray-600 mb-8">
         A simple markdown-based wiki system
       </p>
-      <CButton size="lg" @click="navigateTo('/wiki')">
-        Get Started
-      </CButton>
+      <CButton size="lg" @click="navigateTo('/wiki')"> Get Started </CButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 // Auto-redirect to wiki if user is already authenticated
-const { user } = useAuth()
+const { user, isLoading } = useAuth();
 
-watch(user, (newUser) => {
-  if (newUser) {
-    navigateTo('/wiki')
-  }
-}, { immediate: true })
+watch(
+  [user, isLoading],
+  ([newUser, loading]) => {
+    if (loading) return; // Don't redirect while still loading
+
+    if (newUser) {
+      navigateTo("/wiki");
+    }
+  },
+  { immediate: true }
+);
 </script>

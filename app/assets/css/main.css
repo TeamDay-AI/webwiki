@@ -1,76 +1,144 @@
 @import "tailwindcss";
 
-/* Prose styles for markdown content */
+/* Typography Theme Variables */
+
+/* System Theme - Clean modern typography */
+.theme-default {
+  --theme-font-family: var(--font-sans);
+  --theme-font-weight-heading: 700;
+  --theme-font-weight-text: 400;
+  --theme-line-height-heading: 1.2;
+  --theme-line-height-text: 1.6;
+  --theme-letter-spacing: 0;
+  --theme-font-size-multiplier: 1;
+  --theme-spacing-multiplier: 1;
+}
+
+/* Editorial Theme - Classic serif typography for readability */
+.theme-editorial {
+  --theme-font-family: var(--font-serif);
+  --theme-font-weight-heading: 600;
+  --theme-font-weight-text: 400;
+  --theme-line-height-heading: 1.3;
+  --theme-line-height-text: 1.7;
+  --theme-letter-spacing: 0.02em;
+  --theme-font-size-multiplier: 1.1;
+  --theme-spacing-multiplier: 1.25;
+}
+
+/* Compact Theme - Dense layout for maximum content */
+.theme-compact {
+  --theme-font-family: var(--font-sans);
+  --theme-font-weight-heading: 600;
+  --theme-font-weight-text: 400;
+  --theme-line-height-heading: 1.15;
+  --theme-line-height-text: 1.5;
+  --theme-letter-spacing: -0.01em;
+  --theme-font-size-multiplier: 0.9;
+  --theme-spacing-multiplier: 0.8;
+}
+
+/* Terminal Theme - Monospace fonts for developer experience */
+.theme-terminal {
+  --theme-font-family: var(--font-mono);
+  --theme-font-weight-heading: 700;
+  --theme-font-weight-text: 400;
+  --theme-line-height-heading: 1.2;
+  --theme-line-height-text: 1.6;
+  --theme-letter-spacing: 0;
+  --theme-font-size-multiplier: 0.95;
+  --theme-spacing-multiplier: 1;
+}
+
+/* Base prose styles that work with both themes */
 .prose {
   color: theme('colors.gray.700');
   max-width: none;
+  font-family: var(--theme-font-family);
+  font-weight: var(--theme-font-weight-text);
+  line-height: var(--theme-line-height-text);
+  letter-spacing: var(--theme-letter-spacing);
 }
 
 .prose :where(h1):not(:where([class~="not-prose"] *)) {
   color: theme('colors.gray.900');
-  font-weight: 800;
-  font-size: 2.25rem;
+  font-family: var(--theme-font-family);
+  font-weight: var(--theme-font-weight-heading);
+  font-size: calc(2.25rem * var(--theme-font-size-multiplier));
   margin-top: 0;
-  margin-bottom: 2rem;
-  line-height: 1.1111111;
+  margin-bottom: calc(2rem * var(--theme-spacing-multiplier));
+  line-height: var(--theme-line-height-heading);
+  letter-spacing: var(--theme-letter-spacing);
 }
 
 .prose :where(h2):not(:where([class~="not-prose"] *)) {
   color: theme('colors.gray.900');
-  font-weight: 700;
-  font-size: 1.875rem;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  line-height: 1.3333333;
+  font-family: var(--theme-font-family);
+  font-weight: var(--theme-font-weight-heading);
+  font-size: calc(1.875rem * var(--theme-font-size-multiplier));
+  margin-top: calc(2rem * var(--theme-spacing-multiplier));
+  margin-bottom: calc(1rem * var(--theme-spacing-multiplier));
+  line-height: var(--theme-line-height-heading);
+  letter-spacing: var(--theme-letter-spacing);
 }
 
 .prose :where(h3):not(:where([class~="not-prose"] *)) {
   color: theme('colors.gray.900');
-  font-weight: 600;
-  font-size: 1.5rem;
-  margin-top: 1.6rem;
-  margin-bottom: 0.6rem;
-  line-height: 1.6;
+  font-family: var(--theme-font-family);
+  font-weight: var(--theme-font-weight-heading);
+  font-size: calc(1.5rem * var(--theme-font-size-multiplier));
+  margin-top: calc(1.6rem * var(--theme-spacing-multiplier));
+  margin-bottom: calc(0.6rem * var(--theme-spacing-multiplier));
+  line-height: var(--theme-line-height-heading);
+  letter-spacing: var(--theme-letter-spacing);
 }
 
 .prose :where(h4):not(:where([class~="not-prose"] *)) {
   color: theme('colors.gray.900');
-  font-weight: 600;
-  font-size: 1.25rem;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  line-height: 1.5;
+  font-family: var(--theme-font-family);
+  font-weight: var(--theme-font-weight-heading);
+  font-size: calc(1.25rem * var(--theme-font-size-multiplier));
+  margin-top: calc(1.5rem * var(--theme-spacing-multiplier));
+  margin-bottom: calc(0.5rem * var(--theme-spacing-multiplier));
+  line-height: var(--theme-line-height-heading);
+  letter-spacing: var(--theme-letter-spacing);
 }
 
 .prose :where(h5):not(:where([class~="not-prose"] *)) {
   color: theme('colors.gray.900');
-  font-weight: 600;
-  font-size: 1.125rem;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  line-height: 1.5;
+  font-family: var(--theme-font-family);
+  font-weight: var(--theme-font-weight-heading);
+  font-size: calc(1.125rem * var(--theme-font-size-multiplier));
+  margin-top: calc(1.5rem * var(--theme-spacing-multiplier));
+  margin-bottom: calc(0.5rem * var(--theme-spacing-multiplier));
+  line-height: var(--theme-line-height-heading);
+  letter-spacing: var(--theme-letter-spacing);
 }
 
 .prose :where(h6):not(:where([class~="not-prose"] *)) {
   color: theme('colors.gray.900');
-  font-weight: 600;
-  font-size: 1rem;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  line-height: 1.5;
+  font-family: var(--theme-font-family);
+  font-weight: var(--theme-font-weight-heading);
+  font-size: calc(1rem * var(--theme-font-size-multiplier));
+  margin-top: calc(1.5rem * var(--theme-spacing-multiplier));
+  margin-bottom: calc(0.5rem * var(--theme-spacing-multiplier));
+  line-height: var(--theme-line-height-heading);
+  letter-spacing: var(--theme-letter-spacing);
 }
 
 .prose :where(p):not(:where([class~="not-prose"] *)) {
-  margin-top: 1.25rem;
-  margin-bottom: 1.25rem;
+  margin-top: calc(1.25rem * var(--theme-spacing-multiplier));
+  margin-bottom: calc(1.25rem * var(--theme-spacing-multiplier));
+  font-size: calc(1rem * var(--theme-font-size-multiplier));
 }
 
 .prose :where([class~="lead"]):not(:where([class~="not-prose"] *)) {
   color: theme('colors.gray.600');
-  font-size: 1.25rem;
-  line-height: 1.6;
-  margin-top: 1.2rem;
-  margin-bottom: 1.2rem;
+  font-size: calc(1.25rem * var(--theme-font-size-multiplier));
+  line-height: var(--theme-line-height-text);
+  margin-top: calc(1.2rem * var(--theme-spacing-multiplier));
+  margin-bottom: calc(1.2rem * var(--theme-spacing-multiplier));
+  letter-spacing: var(--theme-letter-spacing);
 }
 
 .prose :where(a):not(:where([class~="not-prose"] *)) {
@@ -197,6 +265,10 @@
 }
 
 @theme {
+  /* Dark mode configuration */
+  --default-transition-duration: 150ms;
+  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  
   --font-sans:
     ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
@@ -597,4 +669,59 @@
       animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
     }
   }
+}
+
+/* Typography Theme Enhancements */
+
+/* Editorial theme: Emphasis on readability with serif fonts */
+.theme-editorial .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  font-style: italic;
+  border-left-width: 3px;
+}
+
+.theme-editorial .prose :where([class~="lead"]):not(:where([class~="not-prose"] *)) {
+  font-style: italic;
+}
+
+/* Compact theme: Tighter spacing and smaller elements */
+.theme-compact .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  padding-left: calc(1rem * var(--theme-spacing-multiplier));
+  margin: calc(1.2rem * var(--theme-spacing-multiplier)) 0;
+}
+
+.theme-compact .prose :where(ul, ol):not(:where([class~="not-prose"] *)) {
+  padding-left: calc(1.2rem * var(--theme-spacing-multiplier));
+  margin-top: calc(1rem * var(--theme-spacing-multiplier));
+  margin-bottom: calc(1rem * var(--theme-spacing-multiplier));
+}
+
+.theme-compact .prose :where(li):not(:where([class~="not-prose"] *)) {
+  margin-top: calc(0.25rem * var(--theme-spacing-multiplier));
+  margin-bottom: calc(0.25rem * var(--theme-spacing-multiplier));
+}
+
+/* Terminal theme: Monospace with developer-friendly styling */
+.theme-terminal .prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"] *)) {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.theme-terminal .prose :where(code):not(:where([class~="not-prose"] *)) {
+  font-family: inherit;
+  background-color: transparent;
+  padding: 0;
+  font-weight: 500;
+}
+
+.theme-terminal .prose :where(pre):not(:where([class~="not-prose"] *)) {
+  font-family: inherit;
+  border: 1px solid theme('colors.gray.300');
+}
+
+.theme-terminal .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  font-family: inherit;
+  border-left-width: 2px;
+  border-left-style: solid;
+  font-style: normal;
 }

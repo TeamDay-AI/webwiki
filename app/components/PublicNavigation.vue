@@ -2,7 +2,7 @@
   <div class="h-full bg-gray-50 border-r border-gray-200 overflow-y-auto">
     <div class="p-4">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-900">Wiki Files</h2>
+        <!-- <h2 class="text-lg font-semibold text-gray-900">Wiki</h2> -->
         <div class="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded">
           Read Only
         </div>
@@ -40,7 +40,10 @@
         <CIcon name="i-heroicons-arrow-path" class="animate-spin" />
       </div>
 
-      <div v-else-if="!files?.files || files.files.length === 0" class="p-4 text-center text-gray-500 text-sm">
+      <div
+        v-else-if="!files?.files || files.files.length === 0"
+        class="p-4 text-center text-gray-500 text-sm"
+      >
         No files or folders found
       </div>
 
@@ -76,13 +79,13 @@ interface WikiFile {
 
 const props = defineProps<{
   userId: string;
-}>()
+}>();
 
 const emit = defineEmits<{
   selectFile: [path: string];
-}>()
+}>();
 
-const currentPath = ref("")
+const currentPath = ref("");
 
 const pathSegments = computed(() => {
   return currentPath.value ? currentPath.value.split("/").filter(Boolean) : [];
