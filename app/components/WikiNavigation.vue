@@ -5,7 +5,7 @@
     <div class="p-4">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Wiki Files
+          Wiki
         </h2>
         <div class="flex items-center gap-1">
           <CButton

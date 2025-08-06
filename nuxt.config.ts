@@ -16,7 +16,29 @@ export default defineNuxtConfig({
       "/firebase-messaging-sw.js": {
         headers: { "Content-Type": "application/javascript" },
       },
+      // Add caching for public API routes
+      "/api/public/**": {
+        headers: {
+          "Cache-Control": "public, max-age=300", // 5 minutes cache
+          "X-Robots-Tag": "noindex",
+        },
+      },
+      // Prerender public routes for better performance
+      "/public/**": {
+        ssr: true,
+        experimentalNoScripts: false,
+      },
     },
+  },
+
+  // Enable experimental features for better performance
+  experimental: {
+    payloadExtraction: false, // Disable payload extraction for public routes
+  },
+
+  // Optimize build
+  build: {
+    transpile: ["marked"], // Ensure marked is properly transpiled
   },
 
   colorMode: {

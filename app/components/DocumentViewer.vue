@@ -268,7 +268,7 @@ import Link from "@tiptap/extension-link";
 import TurndownService from "turndown";
 
 // Define user interface
-interface User {
+interface _User {
   id: string;
   email?: string;
   [key: string]: unknown;
@@ -543,7 +543,14 @@ const shareFile = async () => {
   sharing.value = true;
   try {
     const baseUrl = window.location.origin;
-    const publicUrl = `${baseUrl}/public/${user.value.id}/${currentFile.value}`;
+    const userId =
+      user.value && typeof user.value === "object" && "id" in user.value
+        ? (user.value as { id: string }).id
+        : "";
+
+    // Clean the file path to remove internal structure
+    const cleanFilePath = currentFile.value.replace(/^users\/[^/]+\//, "");
+    const publicUrl = `${baseUrl}/public/${userId}/${cleanFilePath}`;
 
     await navigator.clipboard.writeText(publicUrl);
 
@@ -580,3 +587,9 @@ onUnmounted(() => {
   }
 });
 </script>
+
+<style>
+.tiptap {
+  @apply outline-none;
+}
+</style>

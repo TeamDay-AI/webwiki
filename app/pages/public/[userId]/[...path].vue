@@ -49,15 +49,20 @@
       </div>
 
       <!-- Center Panel - Content -->
-      <div class="flex-1 p-4 overflow-y-auto prose">
+      <div class="flex-1 overflow-y-auto">
         <div v-if="pending" class="flex justify-center py-8">
           <CIcon name="i-heroicons-arrow-path" class="animate-spin" size="lg" />
         </div>
-        <div v-else-if="error" class="text-center py-8 text-red-600">
+        <div v-else-if="error" class="text-center py-8 text-red-600 p-4">
           <p>{{ error }}</p>
         </div>
-        <div v-else-if="renderedContent" v-html="renderedContent" />
-        <div v-else class="text-center py-8 text-gray-500">
+        <div
+          v-else-if="currentContent"
+          class="flex-1 p-4 overflow-y-auto prose bg-white dark:bg-gray-900"
+        >
+          <div v-html="renderedContent" />
+        </div>
+        <div v-else class="text-center py-8 text-gray-500 p-4">
           <CIcon
             name="i-heroicons-document-text"
             size="2xl"
@@ -78,6 +83,27 @@
 <script setup lang="ts">
 import { marked } from "marked";
 
+// Initialize theme system for proper typography
+const { setTheme } = useTheme();
+// Set default theme on mount
+onMounted(() => {
+  setTheme("default");
+});
+interface PublicApiResponse {
+  success: boolean;
+  type: "directory" | "file";
+  files?: Array<{
+    key: string;
+    name: string;
+    isFile: boolean;
+    lastModified?: Date;
+    size?: number;
+  }>;
+  content?: string;
+  lastModified?: Date;
+  path?: string;
+}
+
 const route = useRoute();
 
 // Extract userId and path from route params
@@ -90,10 +116,19 @@ const currentPath = computed(() => {
   return pathParam || "";
 });
 
-// Path segments for breadcrumb navigation
+// Path segments for breadcrumb navigation (cleaned of internal structure)
 const pathSegments = computed(() => {
   if (!currentPath.value) return [];
-  return currentPath.value.split("/").filter(Boolean);
+  const segments = currentPath.value.split("/").filter(Boolean);
+  // Remove users/userId from the beginning of the path segments
+  if (
+    segments.length >= 2 &&
+    segments[0] === "users" &&
+    segments[1] === userId.value
+  ) {
+    return segments.slice(2); // Remove 'users' and userId
+  }
+  return segments;
 });
 
 // Navigate to a specific path segment (for breadcrumb navigation)
@@ -112,9 +147,33 @@ const currentContent = ref<string>("");
 const pending = ref(false);
 const error = ref<string | null>(null);
 
-// Computed properties
+// Content caching
+const contentCache = new Map<
+  string,
+  { content: string; rendered: string; timestamp: number }
+>();
+const CONTENT_CACHE_DURATION = 300000; // 5 minutes
+
+// Clear cache for specific user to prevent stale data
+const clearUserCache = (userId: string) => {
+  const keysToDelete = Array.from(contentCache.keys()).filter((key) =>
+    key.startsWith(`public_${userId}_`)
+  );
+  keysToDelete.forEach((key) => contentCache.delete(key));
+};
+
+// Memoized markdown rendering
 const renderedContent = computed(() => {
   if (!currentContent.value) return "";
+
+  const cacheKey = `rendered_${currentContent.value.slice(0, 100)}_${
+    currentContent.value.length
+  }`;
+  const cached = contentCache.get(cacheKey);
+
+  if (cached && cached.content === currentContent.value) {
+    return cached.rendered;
+  }
 
   try {
     // Simple approach - just render markdown and add IDs with post-processing
@@ -134,6 +193,13 @@ const renderedContent = computed(() => {
       }
     );
 
+    // Cache the rendered result
+    contentCache.set(cacheKey, {
+      content: currentContent.value,
+      rendered: html,
+      timestamp: Date.now(),
+    });
+
     return html;
   } catch (error) {
     console.error("Error rendering markdown:", error);
@@ -144,32 +210,69 @@ const renderedContent = computed(() => {
 
 // File selection handler
 const handleFileSelect = (filePath: string) => {
-  // Remove user prefix and navigate to public URL
+  // Extract the clean path for URL navigation
   const cleanPath = filePath.replace(/^users\/[^/]+\//, "");
   if (cleanPath && cleanPath !== currentPath.value) {
+    // Navigate to the clean URL, but loadFile will handle the full path
     navigateTo(`/public/${userId.value}/${cleanPath}`);
   }
 };
 
-// Load file content
+// Load file content with caching
 const loadFile = async (path: string) => {
   if (!path || !userId.value) return;
+
+  // Create a more specific cache key to avoid collisions
+  const cacheKey = `public_${userId.value}_${path}`;
+
+  // Check cache first
+  const cached = contentCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CONTENT_CACHE_DURATION) {
+    currentContent.value = cached.content;
+    return;
+  }
 
   pending.value = true;
   error.value = null;
 
   try {
-    const fullPath = `users/${userId.value}/${path}`;
-    // For now, public pages will show an error since we need authentication
-    // TODO: Create a public endpoint or implement public file sharing
-    error.value =
-      "Public file access is currently disabled due to authentication requirements. Please sign in to access files.";
+    // Check if path already includes the user prefix (from direct file selection)
+    const fullPath = path.startsWith(`users/${userId.value}/`)
+      ? path
+      : `users/${userId.value}/${path}`;
+    const response = (await $fetch(
+      `/api/public/${fullPath}`
+    )) as PublicApiResponse;
+
+    if (response.success && response.type === "file" && response.content) {
+      currentContent.value = response.content;
+
+      // Cache the content
+      contentCache.set(cacheKey, {
+        content: response.content,
+        rendered: "", // Will be filled by renderedContent computed
+        timestamp: Date.now(),
+      });
+    } else {
+      error.value = "Failed to load file content";
+    }
   } catch (err: any) {
     console.error("Failed to load file:", err);
-    error.value = "Public file access is currently disabled";
+    error.value = err.statusMessage || "Failed to load file";
   } finally {
     pending.value = false;
   }
+};
+
+// Debounced loading to prevent rapid successive requests
+let loadTimeout: NodeJS.Timeout | null = null;
+const debouncedLoadFile = (path: string) => {
+  if (loadTimeout) {
+    clearTimeout(loadTimeout);
+  }
+  loadTimeout = setTimeout(() => {
+    loadFile(path);
+  }, 100); // 100ms debounce
 };
 
 // Watch for path changes and load content
@@ -177,9 +280,23 @@ watch(
   currentPath,
   (newPath) => {
     if (newPath) {
-      loadFile(newPath);
+      debouncedLoadFile(newPath);
     } else {
       currentContent.value = "";
+    }
+  },
+  { immediate: true }
+);
+
+// Clear cache when userId changes to prevent stale data
+watch(
+  userId,
+  (newUserId, oldUserId) => {
+    if (oldUserId && newUserId !== oldUserId) {
+      clearUserCache(oldUserId);
+    }
+    if (newUserId) {
+      clearUserCache(newUserId); // Clear current user cache on page load
     }
   },
   { immediate: true }
