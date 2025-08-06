@@ -1,6 +1,10 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { requireAuth, requirePathAccess } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
+  // Require authentication
+  const user = requireAuth(event);
+
   const config = useRuntimeConfig();
   const body = await readBody(event);
 
@@ -10,6 +14,9 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Folder path is required",
     });
   }
+
+  // Check path access authorization
+  requirePathAccess(user, body.path);
 
   // Ensure path ends with / for folder creation
   const folderPath = body.path.endsWith("/") ? body.path : `${body.path}/`;

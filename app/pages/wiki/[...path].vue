@@ -69,9 +69,9 @@
         <WikiNavigation @select-file="handleFileSelect" />
       </div>
 
-      <!-- Center Panel - Editor -->
+      <!-- Center Panel - Document Viewer -->
       <div class="flex-1">
-        <MarkdownEditor
+        <DocumentViewer
           :file-path="selectedFile"
           @content-change="handleContentChange"
         />
@@ -203,7 +203,8 @@ const handleAuth = async () => {
     // Initialize user directory if this is a new signup
     if (authMode.value === "signup" && data.user) {
       try {
-        await $fetch("/api/wiki/init-user", {
+        const { $fetchWithAuth } = useAuth();
+        await $fetchWithAuth("/api/wiki/init-user", {
           method: "POST",
           body: { userId: data.user.id },
         });

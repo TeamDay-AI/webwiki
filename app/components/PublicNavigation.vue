@@ -96,18 +96,18 @@ const navigateToPath = (index: number) => {
   currentPath.value = segments.join("/") + (segments.length > 0 ? "/" : "");
 };
 
-const {
-  data: files,
-  pending,
-  refresh,
-} = await useFetch<{ files: WikiFile[]; success: boolean }>("/api/wiki/files", {
-  query: computed(() => ({
-    path: props.userId
-      ? `users/${props.userId}/${currentPath.value}`
-      : currentPath.value,
-  })),
-  watch: [() => props.userId, currentPath],
+// For now, disable public navigation due to authentication requirements
+const files = ref<{ files: WikiFile[]; success: boolean }>({
+  files: [],
+  success: false,
 });
+const pending = ref(false);
+const refresh = () => {
+  // TODO: Implement public file access or authentication for public pages
+  console.warn(
+    "Public file navigation is currently disabled due to authentication requirements"
+  );
+};
 
 const handleItemClick = (item: WikiFile) => {
   if (item.isFile) {

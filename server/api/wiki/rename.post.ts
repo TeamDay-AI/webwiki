@@ -5,8 +5,12 @@ import {
   ListObjectsV2Command,
   DeleteObjectsCommand,
 } from "@aws-sdk/client-s3";
+import { requireAuth, requirePathAccess } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
+  // Require authentication
+  const user = requireAuth(event);
+
   const config = useRuntimeConfig();
   const body = await readBody(event);
 
@@ -16,6 +20,10 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Both oldPath and newPath are required",
     });
   }
+
+  // Check path access authorization for both old and new paths
+  requirePathAccess(user, body.oldPath);
+  requirePathAccess(user, body.newPath);
 
   const { oldPath, newPath, isDirectory } = body;
 

@@ -1,8 +1,12 @@
 <template>
-  <div class="h-full bg-gray-50 border-r border-gray-200 overflow-y-auto">
+  <div
+    class="h-full bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto"
+  >
     <div class="p-4">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold text-gray-900">Wiki Files</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Wiki Files
+        </h2>
         <div class="flex items-center gap-1">
           <CButton
             size="md"
@@ -26,7 +30,10 @@
       </div>
 
       <!-- Breadcrumb navigation -->
-      <div v-if="currentPath" class="mb-3 text-xs text-gray-500">
+      <div
+        v-if="currentPath"
+        class="mb-3 text-xs text-gray-500 dark:text-gray-400"
+      >
         <CButton size="xs" color="gray" variant="ghost" class="px-1">
           <CIcon name="i-heroicons-home" size="md" />
         </CButton>
@@ -42,7 +49,9 @@
           >
             {{ segment }}
           </CButton>
-          <span v-else class="font-medium text-gray-700">{{ segment }}</span>
+          <span v-else class="font-medium text-gray-700 dark:text-gray-300">{{
+            segment
+          }}</span>
           <span v-if="index < pathSegments.length - 1" class="mx-1">/</span>
         </span>
       </div>
@@ -55,7 +64,7 @@
         <!-- Inline file creation when no files exist -->
         <div
           v-if="creatingFile"
-          class="group flex items-center px-2 py-1 text-sm rounded-md bg-blue-50 border border-blue-200 mb-2"
+          class="group flex items-center px-2 py-1 text-sm rounded-md bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 mb-2"
         >
           <CIcon
             name="i-heroicons-document-text"
@@ -87,7 +96,7 @@
         <!-- Inline folder creation when no files exist -->
         <div
           v-if="creatingFolder"
-          class="group flex items-center px-2 py-1 text-sm rounded-md bg-green-50 border border-green-200 mb-2"
+          class="group flex items-center px-2 py-1 text-sm rounded-md bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 mb-2"
         >
           <CIcon
             name="i-heroicons-folder"
@@ -118,7 +127,7 @@
 
         <div
           v-if="!creatingFile && !creatingFolder"
-          class="p-4 text-center text-gray-500 text-sm"
+          class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm"
         >
           No files or folders found
         </div>
@@ -128,7 +137,7 @@
         <!-- Inline file creation -->
         <div
           v-if="creatingFile"
-          class="group flex items-center px-2 py-1 text-sm rounded-md bg-blue-50 border border-blue-200"
+          class="group flex items-center px-2 py-1 text-sm rounded-md bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
         >
           <CIcon
             name="i-heroicons-document-text"
@@ -160,7 +169,7 @@
         <!-- Inline folder creation -->
         <div
           v-if="creatingFolder"
-          class="group flex items-center px-2 py-1 text-sm rounded-md bg-green-50 border border-green-200"
+          class="group flex items-center px-2 py-1 text-sm rounded-md bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700"
         >
           <CIcon
             name="i-heroicons-folder"
@@ -192,7 +201,7 @@
         <div
           v-for="item in files?.files || []"
           :key="item.key"
-          class="group flex items-center px-2 py-1 text-sm rounded-md hover:bg-gray-100"
+          class="group flex items-center px-2 py-1 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
           :class="{ 'cursor-pointer': editingItem !== item.key }"
         >
           <CIcon
@@ -200,7 +209,7 @@
               item.isFile ? 'i-heroicons-document-text' : 'i-heroicons-folder'
             "
             size="sm"
-            class="mr-2 text-gray-500"
+            class="mr-2 text-gray-500 dark:text-gray-400"
           />
           <div
             v-if="editingItem === item.key"
@@ -227,7 +236,7 @@
           </div>
           <span
             v-else
-            class="flex-1 truncate cursor-pointer hover:text-blue-600 transition-colors"
+            class="flex-1 truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-gray-900 dark:text-gray-100"
             @click="editingItem === null ? handleItemClick(item) : null"
             @dblclick="startInlineEdit(item)"
             :title="`${item.isFile ? 'File' : 'Directory'}: ${
@@ -326,7 +335,10 @@ const creatingFolder = ref(false);
 const createFileName = ref("");
 const createFolderName = ref("");
 
-const { user } = useAuth() as { user: Ref<{ id: string } | null> };
+const { user, $fetchWithAuth } = useAuth() as {
+  user: Ref<{ id: string } | null>;
+  $fetchWithAuth: (url: string, options?: any) => Promise<any>;
+};
 const currentPath = ref("");
 
 const pathSegments = computed(() => {
@@ -342,14 +354,20 @@ const {
   data: files,
   pending,
   refresh,
-} = await useFetch<{ files: WikiFile[]; success: boolean }>("/api/wiki/files", {
-  query: computed(() => ({
-    path: user.value
-      ? `users/${user.value.id}/${currentPath.value}`
-      : currentPath.value,
-  })),
-  watch: [user, currentPath],
-});
+} = await useLazyFetch<{ files: WikiFile[]; success: boolean }>(
+  "/api/wiki/files",
+  {
+    query: computed(() => ({
+      path: user.value
+        ? `users/${user.value.id}/${currentPath.value}`
+        : currentPath.value,
+    })),
+    watch: [user, currentPath],
+    server: false, // Client-side only since we need auth headers
+    transform: (data: any) => data,
+    $fetch: $fetchWithAuth as any,
+  }
+);
 
 const handleItemClick = (item: WikiFile) => {
   if (item.isFile) {
@@ -436,7 +454,7 @@ const confirmCreateFile = async () => {
   }${fileName}`;
 
   try {
-    await $fetch(`/api/wiki/${fullPath}`, {
+    await $fetchWithAuth(`/api/wiki/${fullPath}`, {
       method: "PUT",
       body: { content: "# New File\n\nStart editing..." },
     });
@@ -466,7 +484,7 @@ const confirmCreateFolder = async () => {
   }${createFolderName.value.trim()}/.gitkeep`;
 
   try {
-    await $fetch(`/api/wiki/${folderPath}`, {
+    await $fetchWithAuth(`/api/wiki/${folderPath}`, {
       method: "PUT",
       body: { content: "# This file keeps the directory in git" },
     });
@@ -485,7 +503,7 @@ const deleteFile = async (path: string) => {
   if (!confirm("Are you sure you want to delete this file?")) return;
 
   try {
-    await $fetch(`/api/wiki/${path}`, { method: "DELETE" });
+    await $fetchWithAuth(`/api/wiki/${path}`, { method: "DELETE" });
     await refresh();
   } catch (error) {
     console.error("Failed to delete file:", error);
@@ -502,7 +520,7 @@ const deleteDirectory = async (path: string) => {
     return;
 
   try {
-    await $fetch(`/api/wiki/directory/${encodeURIComponent(path)}`, {
+    await $fetchWithAuth(`/api/wiki/directory/${encodeURIComponent(path)}`, {
       method: "DELETE",
     });
     await refresh();
@@ -560,7 +578,7 @@ const confirmRename = async (item: WikiFile) => {
       newPath = pathParts.join("/") + "/";
     }
 
-    await $fetch("/api/wiki/rename", {
+    await $fetchWithAuth("/api/wiki/rename", {
       method: "POST",
       body: {
         oldPath,

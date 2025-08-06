@@ -10,6 +10,15 @@ export default defineNuxtConfig({
   },
   modules: ["@nuxt/eslint", "@nuxt/image", "@nuxt/icon", "@nuxtjs/color-mode"],
 
+  // Handle service worker routes that should not be processed by Vue Router
+  nitro: {
+    routeRules: {
+      "/firebase-messaging-sw.js": {
+        headers: { "Content-Type": "application/javascript" },
+      },
+    },
+  },
+
   colorMode: {
     preference: "system", // default value of $colorMode.preference
     fallback: "light", // fallback value if not system preference found

@@ -3,8 +3,12 @@ import {
   CopyObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
+import { requireAuth, requirePathAccess } from "../../utils/auth";
 
 export default defineEventHandler(async (event) => {
+  // Require authentication
+  const user = requireAuth(event);
+
   const config = useRuntimeConfig();
   const body = await readBody(event);
 
@@ -14,6 +18,10 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Both sourcePath and destinationPath are required",
     });
   }
+
+  // Check path access authorization for both source and destination
+  requirePathAccess(user, body.sourcePath);
+  requirePathAccess(user, body.destinationPath);
 
   const { sourcePath, destinationPath, isDirectory } = body;
 

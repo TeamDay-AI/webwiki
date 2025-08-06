@@ -7,8 +7,8 @@
         <div v-if="currentPath" class="flex items-center text-sm text-gray-500">
           <span class="mx-2">/</span>
           <div class="flex items-center space-x-1">
-            <span 
-              v-for="(segment, index) in pathSegments" 
+            <span
+              v-for="(segment, index) in pathSegments"
               :key="index"
               class="flex items-center"
             >
@@ -22,12 +22,20 @@
               >
                 {{ segment }}
               </CButton>
-              <span v-else class="font-medium text-gray-700 px-2">{{ segment }}</span>
-              <span v-if="index < pathSegments.length - 1" class="mx-1 text-gray-400">/</span>
+              <span v-else class="font-medium text-gray-700 px-2">{{
+                segment
+              }}</span>
+              <span
+                v-if="index < pathSegments.length - 1"
+                class="mx-1 text-gray-400"
+                >/</span
+              >
             </span>
           </div>
         </div>
-        <div class="ml-4 px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+        <div
+          class="ml-4 px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+        >
           Public View
         </div>
       </div>
@@ -50,7 +58,11 @@
         </div>
         <div v-else-if="renderedContent" v-html="renderedContent" />
         <div v-else class="text-center py-8 text-gray-500">
-          <CIcon name="i-heroicons-document-text" size="2xl" class="mx-auto mb-4 text-gray-300" />
+          <CIcon
+            name="i-heroicons-document-text"
+            size="2xl"
+            class="mx-auto mb-4 text-gray-300"
+          />
           <p>Select a file to view its content</p>
         </div>
       </div>
@@ -66,62 +78,65 @@
 <script setup lang="ts">
 import { marked } from "marked";
 
-const route = useRoute()
+const route = useRoute();
 
 // Extract userId and path from route params
-const userId = computed(() => route.params.userId as string)
+const userId = computed(() => route.params.userId as string);
 const currentPath = computed(() => {
-  const pathParam = route.params.path
+  const pathParam = route.params.path;
   if (Array.isArray(pathParam)) {
-    return pathParam.join('/')
+    return pathParam.join("/");
   }
-  return pathParam || ''
-})
+  return pathParam || "";
+});
 
 // Path segments for breadcrumb navigation
 const pathSegments = computed(() => {
-  if (!currentPath.value) return []
-  return currentPath.value.split('/').filter(Boolean)
-})
+  if (!currentPath.value) return [];
+  return currentPath.value.split("/").filter(Boolean);
+});
 
 // Navigate to a specific path segment (for breadcrumb navigation)
 const navigateToSegment = (index: number) => {
-  const segments = pathSegments.value.slice(0, index + 1)
-  const newPath = segments.join('/')
+  const segments = pathSegments.value.slice(0, index + 1);
+  const newPath = segments.join("/");
   if (newPath) {
-    navigateTo(`/public/${userId.value}/${newPath}`)
+    navigateTo(`/public/${userId.value}/${newPath}`);
   } else {
-    navigateTo(`/public/${userId.value}`)
+    navigateTo(`/public/${userId.value}`);
   }
-}
+};
 
 // State
-const currentContent = ref<string>('')
-const pending = ref(false)
-const error = ref<string | null>(null)
+const currentContent = ref<string>("");
+const pending = ref(false);
+const error = ref<string | null>(null);
 
 // Computed properties
 const renderedContent = computed(() => {
   if (!currentContent.value) return "";
-  
+
   try {
     // Simple approach - just render markdown and add IDs with post-processing
     let html = marked(currentContent.value);
-    
+
     // Post-process to add IDs to headings
-    html = html.replace(/<h([123456])>(.+?)<\/h[123456]>/g, (match, level, text) => {
-      const id = text
-        .replace(/<[^>]*>/g, '') // Remove any HTML tags
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .trim();
-      return `<h${level} id="${id}">${text}</h${level}>`;
-    });
-    
+    html = html.replace(
+      /<h([123456])>(.+?)<\/h[123456]>/g,
+      (match, level, text) => {
+        const id = text
+          .replace(/<[^>]*>/g, "") // Remove any HTML tags
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .trim();
+        return `<h${level} id="${id}">${text}</h${level}>`;
+      }
+    );
+
     return html;
   } catch (error) {
-    console.error('Error rendering markdown:', error);
+    console.error("Error rendering markdown:", error);
     // Fallback to basic markdown rendering
     return marked(currentContent.value);
   }
@@ -130,56 +145,53 @@ const renderedContent = computed(() => {
 // File selection handler
 const handleFileSelect = (filePath: string) => {
   // Remove user prefix and navigate to public URL
-  const cleanPath = filePath.replace(/^users\/[^/]+\//, "")
+  const cleanPath = filePath.replace(/^users\/[^/]+\//, "");
   if (cleanPath && cleanPath !== currentPath.value) {
-    navigateTo(`/public/${userId.value}/${cleanPath}`)
+    navigateTo(`/public/${userId.value}/${cleanPath}`);
   }
-}
+};
 
 // Load file content
 const loadFile = async (path: string) => {
-  if (!path || !userId.value) return
-  
-  pending.value = true
-  error.value = null
-  
+  if (!path || !userId.value) return;
+
+  pending.value = true;
+  error.value = null;
+
   try {
-    const fullPath = `users/${userId.value}/${path}`
-    const response = await $fetch<{ content: string; success: boolean }>(`/api/wiki/${fullPath}`)
-    
-    if (response.success) {
-      currentContent.value = response.content
-    } else {
-      error.value = 'Failed to load file'
-    }
+    const fullPath = `users/${userId.value}/${path}`;
+    // For now, public pages will show an error since we need authentication
+    // TODO: Create a public endpoint or implement public file sharing
+    error.value =
+      "Public file access is currently disabled due to authentication requirements. Please sign in to access files.";
   } catch (err: any) {
-    console.error('Failed to load file:', err)
-    if (err.status === 404) {
-      error.value = 'File not found'
-    } else {
-      error.value = 'Failed to load file'
-    }
+    console.error("Failed to load file:", err);
+    error.value = "Public file access is currently disabled";
   } finally {
-    pending.value = false
+    pending.value = false;
   }
-}
+};
 
 // Watch for path changes and load content
-watch(currentPath, (newPath) => {
-  if (newPath) {
-    loadFile(newPath)
-  } else {
-    currentContent.value = ''
-  }
-}, { immediate: true })
+watch(
+  currentPath,
+  (newPath) => {
+    if (newPath) {
+      loadFile(newPath);
+    } else {
+      currentContent.value = "";
+    }
+  },
+  { immediate: true }
+);
 
 // Set page title
 useHead({
   title: computed(() => {
     if (currentPath.value) {
-      return `${currentPath.value} - Public Wiki`
+      return `${currentPath.value} - Public Wiki`;
     }
-    return 'Public Wiki'
-  })
-})
+    return "Public Wiki";
+  }),
+});
 </script>

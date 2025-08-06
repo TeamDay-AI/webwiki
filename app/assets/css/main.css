@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+
 /* Typography Theme Variables */
 
 /* System Theme - Clean modern typography */
@@ -724,4 +727,132 @@
   border-left-width: 2px;
   border-left-style: solid;
   font-style: normal;
+}
+
+/* Dark Mode Prose Styles */
+.dark .prose {
+  color: theme('colors.gray.300');
+}
+
+.dark .prose :where(h1):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+}
+
+.dark .prose :where(h2):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+}
+
+.dark .prose :where(h3):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+}
+
+.dark .prose :where(h4):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+}
+
+.dark .prose :where(h5):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+}
+
+.dark .prose :where(h6):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+}
+
+.dark .prose :where([class~="lead"]):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.400');
+}
+
+.dark .prose :where(a):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.blue.400');
+}
+
+.dark .prose :where(strong):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+}
+
+.dark .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+  border-left-color: theme('colors.gray.600');
+}
+
+.dark .prose :where(code):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+  background-color: theme('colors.gray.800');
+}
+
+.dark .prose :where(pre):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.200');
+  background-color: theme('colors.gray.900');
+}
+
+.dark .prose :where(pre code):not(:where([class~="not-prose"] *)) {
+  color: inherit;
+}
+
+.dark .prose :where(thead):not(:where([class~="not-prose"] *)) {
+  border-bottom-color: theme('colors.gray.600');
+}
+
+.dark .prose :where(thead th):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+}
+
+.dark .prose :where(tbody tr):not(:where([class~="not-prose"] *)) {
+  border-bottom-color: theme('colors.gray.700');
+}
+
+.dark .prose :where(hr):not(:where([class~="not-prose"] *)) {
+  border-color: theme('colors.gray.600');
+}
+
+/* Light Mode Overrides - Ensure light mode works properly */
+.light .prose {
+  color: theme('colors.gray.700');
+}
+
+.light .prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.900');
+}
+
+.light .prose :where(a):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.blue.600');
+}
+
+.light .prose :where(strong):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.900');
+}
+
+.light .prose :where([class~="lead"]):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.600');
+}
+
+.light .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.900');
+  border-left-color: theme('colors.gray.300');
+}
+
+.light .prose :where(code):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.900');
+  background-color: theme('colors.gray.100');
+}
+
+.light .prose :where(pre):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.100');
+  background-color: theme('colors.gray.900');
+}
+
+.light .prose :where(thead):not(:where([class~="not-prose"] *)) {
+  border-bottom-color: theme('colors.gray.300');
+}
+
+.light .prose :where(thead th):not(:where([class~="not-prose"] *)) {
+  color: theme('colors.gray.900');
+}
+
+.light .prose :where(tbody tr):not(:where([class~="not-prose"] *)) {
+  border-bottom-color: theme('colors.gray.200');
+}
+
+.light .prose :where(hr):not(:where([class~="not-prose"] *)) {
+  border-color: theme('colors.gray.300');
 }

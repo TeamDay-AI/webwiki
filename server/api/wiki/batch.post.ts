@@ -4,6 +4,7 @@ import {
   CopyObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
+import { requireAuth, requirePathAccess } from "../../utils/auth";
 
 interface BatchOperation {
   operation: "delete" | "copy" | "move";
@@ -13,6 +14,9 @@ interface BatchOperation {
 }
 
 export default defineEventHandler(async (event) => {
+  // Require authentication
+  const user = requireAuth(event);
+
   const config = useRuntimeConfig();
   const body = await readBody(event);
 
@@ -24,6 +28,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const operations: BatchOperation[] = body.operations;
+
+  // Validate path access for all operations
+  for (const operation of operations) {
+    requirePathAccess(user, operation.sourcePath);
+    if (operation.destinationPath) {
+      requirePathAccess(user, operation.destinationPath);
+    }
+  }
 
   const s3Client = new S3Client({
     credentials: {
